@@ -1,5 +1,0 @@
-nonebot
-httpx
-tinydb
-pydantic
-pyncm
