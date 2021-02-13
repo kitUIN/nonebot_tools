@@ -1,5 +1,5 @@
 # nonebot-plugin-ncm
-基于go-cqhttp与nonebot2的网易无损音乐下载
+基于[go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 与[nonebot2](https://github.com/nonebot/nonebot2) 的网易无损音乐下载
 ## 开始
 `pip install nonebot-plugin-ncm`
 进行安装
@@ -19,5 +19,6 @@ password= #密码
 |  ----  | ----  |
 | /开启 ncm  | 开启解析 |
 | /关闭 ncm  | 关闭解析 |
-| /下载 <id>  | 下载解析出id的歌曲 |
-
+| /下载 < id >  | 下载解析出id的歌曲 |
+# 鸣谢
+- [pyncm](https://github.com/greats3an/pyncm)
