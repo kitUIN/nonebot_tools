@@ -137,6 +137,42 @@ class Setu:
                 await set_essence_msg(id["message_id"])
         self.del_list.append(id["message_id"])  # 撤回表单
         self.build_text(id, msg)  # 记录下载地址
+    '''
+        async def api_0(self):  # https://github.com/yuban10703 请不要过多调用造成yuban的困扰
+        if not self.config.api0 or self.num < 1:
+            return
+        get_num = 0
+        tag = ""
+        url = "http://api.yuban10703.xyz:2333/setu_v4"
+        if self.tag:
+            tag = self.tag
+        params = {"level": self.setu_level,
+                  "num": self.num,
+                  "tag": tag}
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.get(url, params=params, timeout=5)
+                setu_data = res.json()
+        except Exception as e:
+            logger.warning("api0 boom~ :{}".format(e))
+        else:
+            if res.status_code == 200:
+                for data in setu_data["data"]:
+                    if self.ifSent(data["artwork"], self.event.get_user_id()):  # 判断是否发送过
+                        continue
+                    url_original = data["original"].replace("i.pximg.net", "i.pixiv.cat")  # 原图链接
+                    url_large = data["large"].replace("i.pximg.net", "i.pixiv.cat")  # 高清链接
+                    msg = await self.build_msg(api=0, title=data["title"], author=data["author"], uid=data["artwork"],
+                                               author_id=data["artist"], url_original=url_original)  # 组装消息
+                    msg += "标签:{}\r\n".format(",".join(data["tags"]))
+                    await self.sent(msg, url_original=url_original, url_large=url_large)  # 发送消息
+                    get_num += 1
+                    self.num -= 1
+
+            # 打印获取到多少条
+            self.update_status(get_num)  # 更新调用记录
+            logger.info("从yubanのapi获取到{}张关于{}的setu  实际发送{}张".format(setu_data["count"], self.tag, get_num))
+'''
 
     async def api_1(self):  # https://api.lolicon.app/
         if not self.config.api1 or self.num < 1:
@@ -319,6 +355,10 @@ class Setu:
                 self.current_config = group_config.search(Q["group_id"] == self.message["group_id"])[0]
             await self.processing_and_inspect()
         else:  # 好友会话
+            if hso_config.friend:
+                pass
+            else:
+                return await self.send(msg="全局设置中好友调用未开启")
             data = friend_config.search(Q[self.type]["user_id"] == self.message["user_id"])
             if data:  # 该QQ如果自定义过
                 self.current_config = data[0]

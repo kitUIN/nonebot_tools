@@ -131,7 +131,7 @@ class Power:
         "revoke"\r\n
         "at"\r\n
         """
-        key = state["_matched_groups"]
+        key = state["key"]
         mold = event.dict()["message_type"]
         if mold == "group":
             config = group_config.search(Q["group_id"] == event.dict()["group_id"])[0]
@@ -139,20 +139,22 @@ class Power:
             admins.append(config["owner"])
             user_id = event.get_user_id()
             data = config
-            key1 = key[1].strip()
+            key1 = key[0]
             before = str(config["group"][key1])
-            if key[0] == "开启":
+            true = ["True", "T", "true", "t"]
+            false = ["False", "F", "false", "f"]
+            if key[1] in true:
                 data["group"][key1] = True
                 after = "True"
                 if key1 == "r18":
                     data["group"]["setu_level"] = 2
-            elif key[0] == "关闭":
+            elif key[1] in false:
                 data["group"][key1] = False
                 after = "False"
                 if key1 == "r18":
                     data["group"]["setu_level"] = 1
-            elif key[0] == "修改":
-                after: str = key[2].strip()
+            else:
+                after: str = key[1]
                 try:
                     data["group"][key1] = int(after)
                 except:
@@ -169,20 +171,22 @@ class Power:
             user_id = event.get_user_id()
             config = group_config.search(Q["user_id"] == user_id)[0]
             data = config
-            key1 = key[1].strip()
+            key1 = key[0]
             before = str(config[key1])
-            if key[0] == "开启":
+            true = ["True", "T", "true", "t"]
+            false = ["False", "F", "false", "f"]
+            if key[1] in true:
                 data[key1] = True
                 after = "True"
                 if key1 == "r18":
                     data["setu_level"] = 2
-            elif key[0] == "关闭":
+            elif key[1] in false:
                 data[key1] = False
                 after = "False"
                 if key1 == "r18":
                     data["setu_level"] = 1
-            elif key[0] == "修改":
-                after: str = key[2].strip()
+            else:
+                after: str = key[1]
                 try:
                     data[key1] = int(after)
                 except:
