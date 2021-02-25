@@ -7,10 +7,11 @@ class Config(BaseSettings):
     plugin_setting: str = "default"
     phone: str = ""
     password: str = ""
+    bot: str = ""
 
     class Config:
         extra = "ignore"
 
 
 global_config = nonebot.get_driver().config
-config = Config(**global_config.dict())  # 载入配置
+ncm_config = Config(**global_config.dict())  # 载入配置
