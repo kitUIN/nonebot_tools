@@ -19,7 +19,7 @@ from .model import Power
 
 
 # -----------------------------------------------------------------
-setu = on_regex(pattern='来(.*?)[点丶份张幅](.*?)的?(|r18)[色瑟涩🐍][图圖🤮]', priority=1)
+setu = on_regex(pattern="来(.*?)[点丶份张幅](.*?)的?(|r18)[色瑟涩🐍][图圖🤮]", priority=1)
 db = on_regex("#(开启|关闭|修改)(.*)([ ](.*))", priority=2)
 reply = on_message(priority=3)
 pic = on_command("查看")
@@ -47,9 +47,9 @@ async def db_update(bot: Bot, event: Event, state: dict):  # 数据库
 @reply.receive()
 async def message_receive(bot: Bot, event: Event, state: dict):
     logger.info(event.dict())
-    replay = event.dict()['reply']
-    if replay and str(replay['sender']["user_id"]) in hso_config.superusers:
-        await Setu(bot, event, state).get_text(message_id=event.dict()['reply']["message_id"])
+    replay = event.dict()["reply"]
+    if replay and str(replay["sender"]["user_id"]) in hso_config.bot:
+        await Setu(bot, event, state).get_text(message_id=event.dict()["reply"]["message_id"])
 
 
 @pic.handle()

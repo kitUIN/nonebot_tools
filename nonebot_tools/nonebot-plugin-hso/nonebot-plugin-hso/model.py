@@ -40,7 +40,6 @@ class Send:
     async def get_group_member_list(self, group_id):  # 获得群成员列表
         async with httpx.AsyncClient() as client:
             res = await client.post(self.url + "get_group_member_list", params={"group_id": group_id})
-
             return res.json()["data"]
 
 
@@ -81,8 +80,8 @@ class Power:
 
     async def _update_data(self, group_id, data=None):
         if group_config.search(Q["group_id"] == group_id):
-            logger.info('群:{}已存在,更新数据~'.format(group_id))
-            group_config.update(data, Q['group_id'] == group_id)
+            logger.info("群:{}已存在,更新数据~".format(group_id))
+            group_config.update(data, Q["group_id"] == group_id)
         else:
             default = self._group_default()
             if data:
@@ -132,10 +131,10 @@ class Power:
         "revoke"\r\n
         "at"\r\n
         """
-        key = state['_matched_groups']
+        key = state["_matched_groups"]
         mold = event.dict()["message_type"]
         if mold == "group":
-            config = group_config.search(Q["group_id"] == event.dict()['group_id'])[0]
+            config = group_config.search(Q["group_id"] == event.dict()["group_id"])[0]
             admins = config["admins"]
             admins.append(config["owner"])
             user_id = event.get_user_id()
@@ -159,14 +158,14 @@ class Power:
                 except:
                     data["group"][key1] = after
             if int(user_id) in admins or user_id in hso_config.superusers:
-                group_config.update(data, Q["group_id"] == event.dict()['group_id'])
+                group_config.update(data, Q["group_id"] == event.dict()["group_id"])
                 return await bot.send(event=event,
-                                      message=Message(MessageSegment.text('{}：{}-->{}'.format(key1, before, after))))
+                                      message=Message(MessageSegment.text("{}：{}-->{}".format(key1, before, after))))
             else:
                 return await bot.send(event=event,
-                                      message=Message(MessageSegment.text('¿没权限还玩🐎¿')))
+                                      message=Message(MessageSegment.text("¿没权限还玩🐎¿")))
 
-        elif mold == 'private':
+        elif mold == "private":
             user_id = event.get_user_id()
             config = group_config.search(Q["user_id"] == user_id)[0]
             data = config
@@ -190,4 +189,4 @@ class Power:
                     data[key1] = after
             group_config.update(data, Q["user_id"] == user_id)
             return await bot.send(event=event,
-                                  message=Message(MessageSegment.text('{}：{}-->{}'.format(key1, before, after))))
+                                  message=Message(MessageSegment.text("{}：{}-->{}".format(key1, before, after))))
