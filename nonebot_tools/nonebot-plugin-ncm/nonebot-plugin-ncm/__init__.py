@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import httpx
 from loguru import logger
 from nonebot import on_regex, on_command, on_message
@@ -15,12 +18,12 @@ reply = on_message(priority=2)  # 回复下载
 
 @music_regex.receive()
 async def music_receive(bot: Bot, event: Event, state: dict):
-    #logger.info(event.get_type())
+    # logger.info(event.get_type())
     if event.dict()["message_type"] == "private":
         return await bot.send(event=event, message=Message(MessageSegment.text("私聊无法启用解析功能")))
-    #logger.info(bot.__dict__)
-    #logger.info(event.dict())
-    #logger.info(state)
+    # logger.info(bot.__dict__)
+    # logger.info(event.dict())
+    # logger.info(state)
     info = setting.search(Q["group_id"] == event.dict()["group_id"])
     id = list(filter(None, state["_matched_groups"]))  # 去除None
     if info:
@@ -33,14 +36,14 @@ async def music_receive(bot: Bot, event: Event, state: dict):
 
 
 @reply.receive()
-async def message_receive(event: Event):
-    #logger.info(event.dict())
+async def message_receive(bot: Bot, event: Event, state: dict):
+    # logger.info(event.dict())
     _reply = event.dict()["reply"]
     if _reply and str(_reply["sender"]["user_id"]) in ncm_config.bot:
         message: str = _reply["message"][0].data["text"]
-        #logger.info(message)
+        # logger.info(message)
         id = re.search("ID:([0-9]*)", message)
-        #logger.info(id)
+        # logger.info(id)
         info = setting.search(Q["group_id"] == event.dict()["group_id"])
         if info:
             data = music.search(Q["id"] == int(id[1]))[0]
@@ -64,9 +67,9 @@ async def set_receive(bot: Bot, event: Event, state: dict):  # 功能设置接�
     false = ["False", "F", "false", "f"]
     args = str(event.get_message()).strip().split()
     state["key"] = args
-    #logger.info(bot.__dict__)
-    #logger.info(event.dict())
-    #logger.info(state)
+    # logger.info(bot.__dict__)
+    # logger.info(event.dict())
+    # logger.info(state)
     mold = state["key"][0]
     info = setting.search(Q["group_id"] == event.dict()["group_id"])
     if info:
