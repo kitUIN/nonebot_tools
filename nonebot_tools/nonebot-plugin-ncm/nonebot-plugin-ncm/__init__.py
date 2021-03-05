@@ -12,7 +12,7 @@ from .data_source import Ncm, music, ncm_config
 setting = TinyDB("./db/setting.json")
 Q = Query()
 set = on_command("ncm", priority=1)  # 功能设置
-music_regex = on_regex("com\/m\/song\/([0-9]*)\/|id=([0-9]*)&", priority=2)  # 歌曲id识别 (新增json识别)
+music_regex = on_regex("com\/m\/song\/([0-9]*)\/|url\?id=([0-9]*)&", priority=2)  # 歌曲id识别 (新增json识别)
 reply = on_message(priority=2)  # 回复下载
 
 
@@ -26,9 +26,10 @@ async def music_receive(bot: Bot, event: Event, state: dict):
     # logger.info(state)
     info = setting.search(Q["group_id"] == event.dict()["group_id"])
     id = list(filter(None, state["_matched_groups"]))  # 去除None
+    logger.info(id)
     if info:
         if info[0]["song"]:
-            msg = f"如需下载请回复该条消息\r\n歌曲ID:{id[0]}\r\n关闭解析请使用指令\r\n#ncm f"
+            msg = f"歌曲ID:{id[0]}\r\n如需下载请回复该条消息\r\n关闭解析请使用指令\r\n#ncm f"
             await bot.send(event=event, message=Message(MessageSegment.text(msg)))
             await Ncm().download(ids=id)
     else:
@@ -46,17 +47,12 @@ async def message_receive(bot: Bot, event: Event, state: dict):
         # logger.info(id)
         info = setting.search(Q["group_id"] == event.dict()["group_id"])
         if info:
-            data = music.search(Q["id"] == int(id[1]))[0]
+            data = music.search(Q["id"] == int(id[1]))
             if info[0]["song"]:
-                params = {
-                    "group_id": event.dict()["group_id"],
-                    "file": data["file"],
-                    "name": data["filename"]
-                }
-                async with httpx.AsyncClient() as client:
-                    res = await client.post("http://127.0.0.1:5700/upload_group_file", params=params)
-                    if res.status_code != 200:
-                        logger.error("文件上传错误")
+                await bot.call_api('upload_group_file', group_id=event.dict()["group_id"],
+                                   file=data[0]["file"], name=data[0]["filename"])
+            else:
+                logger.error("数据库中未有该音乐地址数据")
         else:
             logger.error("数据库中未发现该ID")
 

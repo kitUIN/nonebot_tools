@@ -14,8 +14,8 @@ bot= #机器人QQ号
 ```
 网易云单曲分享到群内会自动解析下载  
 第一次请使用`/ncm t` 启动解析  
-或者分享一个单曲启动  
-**回复bot消息即可自动上传音乐文件**
+或者分享一个单曲启动(第一个单曲不会有回复)  
+**回复bot消息即可自动上传音乐文件(回复消息不输入内容也行)**  
 ## 功能列表
 - [x] 识别网易云单曲
     - 链接
@@ -30,3 +30,4 @@ bot= #机器人QQ号
 | /ncm f  | 关闭解析 |
 # 鸣谢
 - [pyncm](https://github.com/greats3an/pyncm)
+- [nonebot](https://github.com/nonebot/nonebot2)
