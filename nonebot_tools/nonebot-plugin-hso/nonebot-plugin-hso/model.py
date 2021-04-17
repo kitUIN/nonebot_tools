@@ -10,6 +10,7 @@ from tinydb import TinyDB, Query
 from tinydb.storages import MemoryStorage
 
 from .config import hso_config
+from motor import motor_asyncio
 
 # ---------
 # 公用数据库
@@ -26,6 +27,9 @@ status = TinyDB("./db/status.json")
 db_tmp = TinyDB(storage=MemoryStorage)
 history = TinyDB("./db/history.json")
 Q = Query()
+if hso_config.mongo_host:
+    mongodb_client = motor_asyncio.AsyncIOMotorClient(hso_config.mongo_host, hso_config.mongo_port)
+    hso_db = mongodb_client['hso_db']
 
 
 class Send:
@@ -67,7 +71,7 @@ class Power:
                       "revoke": True,
                       "at": True,
                       "top": 300,
-                      "essence":False},
+                      "essence": False},
             "temp": {"setu_level": 3,
                      "original": False,
                      "setu": True,

@@ -1,8 +1,6 @@
 #! /usr/bin/env python3
 # coding=utf-8
 import asyncio
-import json
-import pathlib
 
 import httpx
 from loguru import logger
@@ -12,7 +10,6 @@ from nonebot.adapters.cqhttp import Bot, Event, Message, MessageSegment
 
 from .data_source import Setu, hso_config
 from .model import Power
-
 # -----------
 # 事件响应
 # -----------
@@ -20,8 +17,8 @@ from .model import Power
 
 # -----------------------------------------------------------------
 setu = on_regex(pattern="来(.*?)[点丶份张幅](.*?)的?(|r18)[色瑟涩🐍][图圖🤮]", priority=1)
-db = on_command("hso", priority=2)
-reply = on_message(priority=3)
+db = on_command("hso", priority=1)
+reply = on_message(priority=2)
 pic = on_command("查看")
 asyncio.run(Power().update_all())
 
@@ -47,7 +44,7 @@ async def db_update(bot: Bot, event: Event, state: dict):  # 数据库
 
 
 @reply.receive()
-async def message_receive(bot: Bot, event: Event, state: dict):
+async def reply_receive(bot: Bot, event: Event, state: dict):
     # logger.info(event.dict())
     replay = event.dict()["reply"]
     if replay and str(replay["sender"]["user_id"]) in hso_config.bot:
