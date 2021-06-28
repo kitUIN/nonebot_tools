@@ -4,6 +4,7 @@
 from pathlib import Path
 from datetime import datetime
 
+import aiofiles
 import httpx
 import pyncm
 from loguru import logger
@@ -36,9 +37,22 @@ class Ncm:
         detail = [(data["name"] + "-" + ",".join([names["name"] for names in data["ar"]])) for data in songs]
         return detail
 
+    async def playlist(self, id):  # 下载歌单
+        data = self.api.playlist.GetPlaylistInfo(id)
+        if data["code"] == 200:
+            raw = data["playlist"]
+            tags = ",".join(raw['tags'])
+            info = f"歌单:{raw['name']}\r\n创建者:{raw['creator']['nickname']}\r\n歌曲总数:{raw['trackCount']}\r\n" \
+                   f"标签:{tags}\r\n播放次数:{raw['playCount']}\r\n收藏:{raw['subscribedCount']}\r\n" \
+                   f"评论:{raw['commentCount']}\r\n分享:{raw['shareCount']}"
+            songs = [i['id'] for i in raw['trackIds']]
+            return info
+
     async def download(self, ids: list):  # 下载音乐
         data: list = self.api.track.GetTrackAudio(song_ids=ids, bitrate=3200 * 1000)["data"]
+        # logger.info(data)
         name: list = self.detail(ids)
+        # logger.info(name)
         for i in range(len(ids)):
             if data[i]["code"] == 404:
                 logger.error("未从网易云读取到下载地址")
@@ -61,8 +75,8 @@ class Ncm:
                 music.update(config, Q["id"] == id)
             else:
                 music.insert(config)
-            with open(file, "wb") as f:  # 下载歌曲
-                async with httpx.AsyncClient() as client:
-                    async with client.stream("GET", url) as response:
-                        async for chunk in response.aiter_bytes():
-                            f.write(chunk)
+            async with httpx.AsyncClient() as client:  # 下载歌曲
+                async with client.stream("GET", url=url) as r:
+                    async with aiofiles.open(file, 'wb') as out_file:
+                        async for chunk in r.aiter_bytes():
+                            await out_file.write(chunk)
