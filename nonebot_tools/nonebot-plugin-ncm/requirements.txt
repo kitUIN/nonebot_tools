@@ -1,4 +1,5 @@
-nonebot
+aiofiles
+nonebot2
 httpx
 tinydb
 pydantic

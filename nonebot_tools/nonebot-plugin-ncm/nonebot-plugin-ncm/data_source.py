@@ -56,23 +56,21 @@ class Ncm:
         for i in range(len(ids)):
             if data[i]["code"] == 404:
                 logger.error("未从网易云读取到下载地址")
+                return
             url = data[i]["url"]
-            id = data[i]["id"]
-            if url[-3:] == "mp3":
-                mold = ".mp3"
-            else:
-                mold = ".flac"
-            filename = name[i] + mold
-            file = Path.cwd().joinpath("music").joinpath(filename).__str__()
+            nid = data[i]["id"]
+            filename = f"{name[i]}.{data[i]['type']}"
+            file = Path.cwd().joinpath("music").joinpath(filename)
             config = {
-                "id": id,
-                "file": file,
-                "filename": filename,
-                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "id": nid,
+                "file": file.__str__(),  # 获取文件位置
+                "filename": filename,  # 获取文件名
+                "from": "song" if len(ids) == 1 else "list",  # 判断来自单曲还是歌单
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 获取时间
             }
-            info = music.search(Q["id"] == id)
+            info = music.search(Q["id"] == nid)
             if info:  # 数据库储存
-                music.update(config, Q["id"] == id)
+                music.update(config, Q["id"] == nid)
             else:
                 music.insert(config)
             async with httpx.AsyncClient() as client:  # 下载歌曲
