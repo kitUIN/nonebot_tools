@@ -8,20 +8,31 @@
 `.env`配置文件中需要添加拥有**VIP的网易云账号**  
 本程序实质为调用web接口下载音乐上传  
 ```
-phone= #手机登录
-password= #密码
-bot= #机器人QQ号
+ncm_admin=["owner", "admin"] # 设置命令权限（非解析下载，仅设置）
+ncm_phone= #手机登录
+ncm_password= #密码
+ncm_bot=  # 机器人QQ
+ncm_song=True  # 单曲解析开关
+ncm_list=True  # 歌单解析开关
+white_list=[]  # 白名单一键导入
 ```
 网易云单曲分享到群内会自动解析下载  
-第一次请使用`/ncm t` 启动解析  
-或者分享一个单曲启动(第一个单曲不会有回复)  
-**回复bot消息即可自动上传音乐文件(回复消息不输入内容也行)**  
+**默认不开启解析功能**  
+**请使用`/ncm t` 启动解析**  
+(或者使用配置中的`white_list`项批量导入需要开启的群号)
+
+**回复bot消息即可自动下载上传音乐文件(回复消息不输入内容也行)**  
+
+**低版本升级至1.0.0版本请删掉db文件夹**  
 ## 功能列表
 - [x] 识别网易云单曲
     - 链接
     - 卡片
     - 卡片转发
-- [ ] 识别网易云歌单    
+- [x] 识别网易云歌单    
+    - 链接
+    - 卡片
+    - 卡片转发
 
 ### 命令列表：(命令开始符号可自行调换)  
 |  命令   | 备注  |
@@ -29,6 +40,16 @@ bot= #机器人QQ号
 | /ncm  | 获取命令菜单 |
 | /ncm t  | 开启解析 |
 | /ncm f  | 关闭解析 |
+### 示例图
+<details>
+  <summary>点击查看详细内容</summary>
+
+  **单曲**  
+  [![WqbK7d.png](https://z3.ax1x.com/2021/07/30/WqbK7d.png)](https://imgtu.com/i/WqbK7d)
+  **歌单**  
+  [![WqbQAA.png](https://z3.ax1x.com/2021/07/30/WqbQAA.png)](https://imgtu.com/i/WqbQAA)  
+  
+</details>
 # 鸣谢
 - [pyncm](https://github.com/greats3an/pyncm)
-- [nonebot](https://github.com/nonebot/nonebot2)
+- [nonebot2](https://github.com/nonebot/nonebot2)
