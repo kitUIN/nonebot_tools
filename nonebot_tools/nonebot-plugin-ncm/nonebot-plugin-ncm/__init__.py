@@ -51,7 +51,7 @@ async def music_receive(bot: Bot, event: Event, state: dict):
 
 @reply.receive()
 async def message_receive(bot: Bot, event: Event, state: dict):
-    logger.info(event.dict())
+    # logger.info(event.dict())
     _reply = event.dict()["reply"]
     if _reply and str(_reply["sender"]["user_id"]) in ncm_config.ncm_bot:
         try:  # 防止其他回复状况报错
@@ -100,8 +100,7 @@ async def set_receive(bot: Bot, event: Event, state: dict):  # 功能设置接�
     # logger.info(bot.__dict__)
     # logger.info(event.dict())
     #  logger.info(state)
-    if event.dict()['sender']['role'] in ncm_config.ncm_admin or event.dict()['sender'][
-        'user_id'] in ncm_config.superusers:
+    if event.dict()['sender']['role'] in ncm_config.ncm_admin or str(event.dict()['sender']['user_id']) in ncm_config.superusers:
         if state["key"]:
             mold = state["key"][0]
         else:
