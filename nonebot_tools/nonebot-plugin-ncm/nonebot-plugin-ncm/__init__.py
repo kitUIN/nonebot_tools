@@ -51,7 +51,7 @@ async def music_receive(bot: Bot, event: Event, state: dict):
 
 @reply.receive()
 async def message_receive(bot: Bot, event: Event, state: dict):
-    # logger.info(event.dict())
+    #logger.info(event.dict())
     if event.dict()["reply"] and str(event.dict()["reply"]["sender"]["user_id"]) in ncm_config.ncm_bot:
         try:  # 防止其他回复状况报错
             message: str = event.dict()["reply"]["message"][0].data["text"]
@@ -63,8 +63,8 @@ async def message_receive(bot: Bot, event: Event, state: dict):
             # logger.info(id)
             info = setting.search(Q["group_id"] == event.dict()["group_id"])
             if info:
-                data = music.search(Q["id"] == int(nid[1]))
                 await Ncm(bot, event).download(ids=[int(nid[1])])
+                data = music.search(Q["id"] == int(nid[1]))
                 if data:
                     await bot.call_api('upload_group_file', group_id=event.dict()["group_id"],
                                        file=data[0]["file"], name=data[0]["filename"])
