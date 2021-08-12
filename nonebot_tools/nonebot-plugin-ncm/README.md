@@ -17,9 +17,9 @@ ncm_list=True  # 歌单解析开关
 white_list=[]  # 白名单一键导入
 ```
 网易云单曲分享到群内会自动解析下载  
-**仅限群聊使用！！！**
-**nonebot-adapter-cqhttp 2.0.0a14版本存在bug,请回滚到2.0.0a13版本使用！！！**
-`pip install nonebot-adapter-cqhttp==2.0.0a13`
+**仅限群聊使用！！！(因为go-cqhttp还不支持好友发文件)**  
+**nonebot-adapter-cqhttp 2.0.0a14版本存在bug,请回滚到2.0.0a13版本使用！！！**  
+`pip install nonebot-adapter-cqhttp==2.0.0a13`  
 **默认不开启解析功能**  
 **请使用`/ncm t` 启动解析**  
 (或者使用配置中的`white_list`项批量导入需要开启的群号)
