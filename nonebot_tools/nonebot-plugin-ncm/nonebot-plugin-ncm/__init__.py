@@ -52,10 +52,9 @@ async def music_receive(bot: Bot, event: Event, state: dict):
 @reply.receive()
 async def message_receive(bot: Bot, event: Event, state: dict):
     # logger.info(event.dict())
-    _reply = event.dict()["reply"]
-    if _reply and str(_reply["sender"]["user_id"]) in ncm_config.ncm_bot:
+    if event.dict()["reply"] and str(event.dict()["reply"]["sender"]["user_id"]) in ncm_config.ncm_bot:
         try:  # 防止其他回复状况报错
-            message: str = _reply["message"][0].data["text"]
+            message: str = event.dict()["reply"]["message"][0].data["text"]
         except KeyError:
             return
         # logger.info(message)
