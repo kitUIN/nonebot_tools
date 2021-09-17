@@ -56,7 +56,7 @@ class Setu:
         info["num"] += get_num
         status.update(info, (Q[mold] == self.message[mold]) & (Q["date"] == date))
 
-    def build_text(self, id=None, msg: str = None):
+    def build_text(self, id = None, msg: str = None):
         if self.type == "group" and self.current_config[self.type]["at"]:
             at = True
         else:
@@ -110,27 +110,24 @@ class Setu:
     async def build_msg(api="",
                         title="",
                         author="",
+                        pid="",
                         uid="",
-                        author_id="",
                         url="",
+                        tags=None,
                         url_original=""):  # 构建消息
-        if api == "loli":  # lolicon.app
+        if api == "lolicon" or api == "yuban":  # lolicon.app
             msg = "标题:{title}\r\n作者:{author}\r\n[www.pixiv.net/users/{author_id}]\r\n作品id:{id}\r\n" \
-                  "[www.pixiv.net/artworks/{id}]\r\n原图:{url_original}\r\n".format(title=title, id=uid, url=url,
-                                                                                  author_id=author_id, author=author,
+                  "[www.pixiv.net/artworks/{id}]\r\n原图:{url_original}\r\n".format(title=title, id=pid, url=url,
+                                                                                  author_id=uid, author=author,
                                                                                   url_original=url_original)
-        elif api == "y":  # yande.re
-            msg = "标题:{title}\r\n作者:{author}\r\n原图:{url_original}\r\n(需要科学上网)\r\n".format(
-                title=title,
-                author=author,
-                url_original=url_original
-            )
+            if tags:
+                msg += "标签:{}\r\n".format(",".join(tags))
         else:
             msg = "msg配置错误,请联系管理员"
         return msg
 
     async def sent(self, msg, url_large=None, url_original=None):
-        if self.current_config[self.type]["original"]:  # 是否发送原图
+        if self.current_config[self.type]["original"] or url_large is None:  # 是否发送原图
             id = await self.send(file=url_original)
         else:
             id = await self.send(file=url_large)
@@ -138,12 +135,14 @@ class Setu:
             self.ess_list.append(id["message_id"])  # 加精表单
         self.del_list.append(id["message_id"])  # 撤回表单
         self.build_text(id, msg)  # 记录下载地址
+        return id
 
     async def api_0(self):  # 本地图片(需要启用mongodb)
         pass
 
     #  这是api书写的范例
     async def api_1(self):  # https://github.com/yuban10703 请不要过多调用造成yuban的困扰
+        is_send = None
         if self.api1 in vars() or self.num < 1:  # 判断是否开启
             return
         get_num = 0
@@ -160,6 +159,8 @@ class Setu:
                 setu_data = res.json()
         except Exception as e:
             logger.warning("api1 boom~ :{}".format(e))
+            await self.send(msg="涩图库一号好像坏了呢")
+
         else:
             if res.status_code == 200:
                 for data in setu_data["data"]:
@@ -167,20 +168,21 @@ class Setu:
                         continue
                     url_original = data["original"].replace("i.pximg.net", "i.pixiv.cat")  # 原图链接
                     url_large = data["large"].replace("i.pximg.net", "i.pixiv.cat")  # 高清链接
-                    msg = await self.build_msg(api="loli", title=data["title"], author=data["author"],
-                                               uid=data["artwork"],
-                                               author_id=data["artist"], url_original=url_original)  # 组装消息
-                    msg += "标签:{}\r\n".format(",".join(data["tags"]))
-                    await self.sent(msg, url_original=url_original, url_large=url_large)  # 发送消息
+                    msg = await self.build_msg(api="yuban", title=data["title"], author=data["author"],
+                                               uid=data["artist"], pid=data["_id"], tags=data["tags"],
+                                               url_original=url_original)  # 组装消息
+
+                    is_send = await self.sent(msg, url_original=url_original, url_large=url_large)  # 发送消息
                     get_num += 1
                     self.num -= 1
-
             # 打印获取到多少条
             self.update_status(get_num)  # 更新调用记录
             logger.info("从yubanのapi获取到{}张关于{}的setu  实际发送{}张".format(setu_data["count"], self.tag, get_num))
+        return is_send
 
     async def api_2(self):  # https://api.lolicon.app/
-        if not self.api2 in vars() or self.num < 1:  # 判断是否开启
+        is_send = None
+        if self.api1 in vars() or self.num < 1:  # 判断是否开启
             return
         if self.setu_level == 1:
             r18 = 0
@@ -191,33 +193,39 @@ class Setu:
         else:
             r18 = 0
         get_num = 0
-        url = "https://api.lolicon.app/setu"
+        url = "https://api.lolicon.app/setu/v2"
         params = {"r18": r18,
-                  "apikey": self.config.lolicon_key,
                   "num": self.num,
-                  "size1200": not bool(self.current_config[self.type]["original"])}
-        if self.num > 10:
-            params["num"] = 10
-        if len(self.tag) != 1 or (len(self.tag[0]) != 0 and not self.tag[0].isspace()):  # 如果tag不为空(字符串字数不为零且不为空)
-            params["keyword"] = self.tag
+                  "size": ["regular", "original"]}
+        if self.num > 100:
+            params["num"] = 100
+        try:
+            params["uid"] = [int(self.tag[0])]
+            logger.info(params["uid"])
+        except Exception as e:
+            if len(self.tag) != 1 or (len(self.tag[0]) != 0 and not self.tag[0].isspace()):  # 如果tag不为空(字符串字数不为零且不为空)
+                params["tag"] = self.tag
         async with httpx.AsyncClient() as client:
-            res = await client.get(url, params=params, timeout=5)
+            res = await client.post(url, json=params, timeout=5)
             setu_data = res.json()
             if res.status_code == 200:
                 for data in setu_data["data"]:
                     if self.ifSent(data["pid"], self.event.get_user_id()):  # 判断是否发送过
                         continue
-                    msg = await self.build_msg(api="loli", title=data["title"], uid=data["pid"], author=data["author"],
-                                               author_id=data["uid"],
-                                               url_original="https://i.pixiv.cat/img-original/img/{}".format(
-                                                   re.findall("img/(.*)", data["url"])[0].replace("_master1200", "")))
-                    await self.sent(msg, url_large=data["url"])  # 发送消息
+                    msg = await self.build_msg(api="lolicon", title=data["title"], pid=data["pid"],
+                                               author=data["author"],
+                                               uid=data["uid"], tags=data["tags"],
+                                               url_original=data["urls"]["original"])
+                    logger.info(data["urls"])
+                    is_send = await self.sent(msg, url_original=data["urls"]["original"])  # 发送消息
                     get_num += 1
                     self.num -= 1
                 logger.info(
-                    "从loliconのapi获取到{}张关于{}的Setu  实际发送{}张".format(setu_data["count"], self.tag, get_num))  # 打印获取到多少条
+                    "从loliconのapi获取到{}张关于{}的Setu  实际发送{}张".format(len(setu_data["data"]), self.tag,
+                                                                  get_num))  # 打印获取到多少条
                 self.update_status(get_num)  # 更新调用记录
             else:
+                await self.send(msg="涩图库二号好像坏了呢")
                 logger.warning("api2:{}".format(res.status_code))
 
     """
@@ -282,7 +290,7 @@ class Setu:
             try:
                 self.num = int(self.num)
             except ValueError:  # 出错就说明不是数字
-                await self.send(msg="不会真的有人连数数字都不会输入吧！")
+                await self.send(msg="不会真的有人连数学数字都不会输入吧！")
                 return
             if self.num <= 0:  # ?????
                 await self.send(msg="你想笑死我好继承我的负产吗¿¿¿")
@@ -382,6 +390,7 @@ class Setu:
         await self.bot.call_api('set_essence_msg', message_id=message_id)
 
     async def action(self):  # 判断数量
+
         for i in self.config.priority:
             if getattr(self, f"api{i}"):
                 t = eval(f"self.api_{i}")

@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # coding=utf-8
 import pathlib
+import re
 
 import httpx
 from loguru import logger
@@ -10,7 +11,6 @@ from tinydb import TinyDB, Query
 from tinydb.storages import MemoryStorage
 
 from .config import hso_config
-from motor import motor_asyncio
 
 # ---------
 # 公用数据库
@@ -27,9 +27,6 @@ status = TinyDB("./db/status.json")
 db_tmp = TinyDB(storage=MemoryStorage)
 history = TinyDB("./db/history.json")
 Q = Query()
-if hso_config.mongo_host:
-    mongodb_client = motor_asyncio.AsyncIOMotorClient(hso_config.mongo_host, hso_config.mongo_port)
-    hso_db = mongodb_client['hso_db']
 
 
 class Send:
@@ -137,6 +134,7 @@ class Power:
         """
         key = state["key"]
         mold = event.dict()["message_type"]
+
         if mold == "group":
             config = group_config.search(Q["group_id"] == event.dict()["group_id"])[0]
             admins = config["admins"]
@@ -144,6 +142,17 @@ class Power:
             user_id = event.get_user_id()
             data = config
             key1 = key[0]
+            priority_list = re.search("\(([0-9,])*\)", key1)
+            cup = list()
+            if priority_list:
+                for i in priority_list[0]:
+                    if i not in ["(", ")", ","]:
+                        cup.append(int(i))
+                before = hso_config.priority
+                hso_config.priority = tuple(cup)
+                await bot.send(event=event,
+                               message=Message(MessageSegment.text("priority：{}-->{}".format(before, tuple(cup)))))
+                return
             before = str(config["group"][key1])
             true = ["True", "T", "true", "t"]
             false = ["False", "F", "false", "f"]

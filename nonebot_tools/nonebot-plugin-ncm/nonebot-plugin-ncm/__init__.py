@@ -11,7 +11,7 @@ from .data_source import Ncm, music, ncm_config, playlist, setting, Q
 set = on_command("ncm", priority=1)  # 功能设置
 music_regex = on_regex("song\?id=([0-9]+)&", priority=1)  # 歌曲id识别 (新增json识别)
 playlist_regex = on_regex("playlist\?id=([0-9]+)&", priority=1)  # 歌单识别
-reply = on_message(priority=2)  # 回复下载
+music_reply = on_message(priority=2)  # 回复下载
 
 
 @music_regex.receive()
@@ -49,9 +49,8 @@ async def music_receive(bot: Bot, event: Event, state: dict):
         setting.insert({"group_id": event.dict()["group_id"], "song": False, "list": False})
 
 
-@reply.receive()
-async def message_receive(bot: Bot, event: Event, state: dict):
-    #logger.info(event.dict())
+@music_reply.receive()
+async def music_reply_receive(bot: Bot, event: Event, state: dict):
     if event.dict()["reply"] and str(event.dict()["reply"]["sender"]["user_id"]) in ncm_config.ncm_bot:
         try:  # 防止其他回复状况报错
             message: str = event.dict()["reply"]["message"][0].data["text"]
