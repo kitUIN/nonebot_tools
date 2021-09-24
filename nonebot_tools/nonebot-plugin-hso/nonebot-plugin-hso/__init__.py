@@ -2,7 +2,7 @@
 # coding=utf-8
 import asyncio
 
-import httpx
+
 from loguru import logger
 from nonebot import on_command, on_message
 from nonebot import on_regex

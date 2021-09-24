@@ -54,7 +54,7 @@ class Ncm:
 
     async def playlist(self, lid):  # 下载歌单
         data = self.api.playlist.GetPlaylistInfo(lid)
-        logger.info(data)
+        # logger.info(data)
         if data["code"] == 200:
             raw = data["playlist"]
             tags = ",".join(raw['tags'])

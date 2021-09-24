@@ -56,7 +56,7 @@ class Setu:
         info["num"] += get_num
         status.update(info, (Q[mold] == self.message[mold]) & (Q["date"] == date))
 
-    def build_text(self, id = None, msg: str = None):
+    def build_text(self, id=None, msg: str = None):
         if self.type == "group" and self.current_config[self.type]["at"]:
             at = True
         else:
@@ -147,7 +147,7 @@ class Setu:
             return
         get_num = 0
         tag = ""
-        url = "http://api.yuban10703.xyz:2333/setu_v4"
+        url = "https://setu.yuban10703.xyz/setu"
         if self.tag:
             tag = self.tag
         params = {"level": self.setu_level,
@@ -166,10 +166,11 @@ class Setu:
                 for data in setu_data["data"]:
                     if self.ifSent(data["artwork"], self.event.get_user_id()):  # 判断是否发送过
                         continue
-                    url_original = data["original"].replace("i.pximg.net", "i.pixiv.cat")  # 原图链接
-                    url_large = data["large"].replace("i.pximg.net", "i.pixiv.cat")  # 高清链接
-                    msg = await self.build_msg(api="yuban", title=data["title"], author=data["author"],
-                                               uid=data["artist"], pid=data["_id"], tags=data["tags"],
+                    url_original = data["urls"]["original"].replace("i.pximg.net", "i.pixiv.cat")  # 原图链接
+                    url_large = data["urls"]["large"].replace("i.pximg.net", "i.pixiv.cat")  # 高清链接
+                    msg = await self.build_msg(api="yuban", title=data["artwork"]["title"],
+                                               author=data["author"]["name"],
+                                               uid=data["author"]['id'], pid=data["artwork"]["id"], tags=data["tags"],
                                                url_original=url_original)  # 组装消息
 
                     is_send = await self.sent(msg, url_original=url_original, url_large=url_large)  # 发送消息

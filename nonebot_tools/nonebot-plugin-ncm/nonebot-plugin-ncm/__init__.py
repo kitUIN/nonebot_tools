@@ -4,19 +4,18 @@
 import nonebot
 from loguru import logger
 from nonebot import on_regex, on_command, on_message
-from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, Message
+from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, Message, ActionFailed
 import re
 from .data_source import Ncm, music, ncm_config, playlist, setting, Q
 
 set = on_command("ncm", priority=1)  # 功能设置
-music_regex = on_regex("song\?id=([0-9]+)&", priority=1)  # 歌曲id识别 (新增json识别)
-playlist_regex = on_regex("playlist\?id=([0-9]+)&", priority=1)  # 歌单识别
-music_reply = on_message(priority=2)  # 回复下载
+music_regex = on_regex("song\?id=([0-9]+)&", priority=ncm_config.ncm_priority)  # 歌曲id识别 (新增json识别)
+playlist_regex = on_regex("playlist\?id=([0-9]+)&", priority=ncm_config.ncm_priority)  # 歌单识别
+music_reply = on_message(priority=ncm_config.ncm_priority)  # 回复下载
 
 
 @music_regex.receive()
 async def music_receive(bot: Bot, event: Event, state: dict):
-    # logger.info(event.get_type())
     if event.dict()["message_type"] == "private":
         return await bot.send(event=event, message=Message(MessageSegment.text("私聊无法启用解析功能")))
     # logger.info(bot.__dict__)
@@ -35,12 +34,11 @@ async def music_receive(bot: Bot, event: Event, state: dict):
 
 @playlist_regex.receive()
 async def music_receive(bot: Bot, event: Event, state: dict):
-    # logger.info(event.get_type())
     if event.dict()["message_type"] == "private":
         return await bot.send(event=event, message=Message(MessageSegment.text("私聊无法启用解析功能")))
     info = setting.search(Q["group_id"] == event.dict()["group_id"])
     lid = list(filter(None, state["_matched_groups"]))[0]  # 去除None
-    logger.info(lid)
+    # logger.info(lid)
     if info:
         if info[0]["list"]:
             msg = await Ncm(bot, event).playlist(lid=lid)
@@ -51,7 +49,7 @@ async def music_receive(bot: Bot, event: Event, state: dict):
 
 @music_reply.receive()
 async def music_reply_receive(bot: Bot, event: Event, state: dict):
-    if event.dict()["reply"] and str(event.dict()["reply"]["sender"]["user_id"]) in ncm_config.ncm_bot:
+    if event.dict()["reply"] and event.dict()["reply"]["sender"]["user_id"] == event.self_id:
         try:  # 防止其他回复状况报错
             message: str = event.dict()["reply"]["message"][0].data["text"]
         except KeyError:
@@ -65,8 +63,12 @@ async def music_reply_receive(bot: Bot, event: Event, state: dict):
                 await Ncm(bot, event).download(ids=[int(nid[1])])
                 data = music.search(Q["id"] == int(nid[1]))
                 if data:
-                    await bot.call_api('upload_group_file', group_id=event.dict()["group_id"],
-                                       file=data[0]["file"], name=data[0]["filename"])
+                    try:
+                        await bot.call_api('upload_group_file', group_id=event.dict()["group_id"],
+                                           file=data[0]["file"], name=data[0]["filename"])
+                    except ActionFailed as e:
+                        if e.info["wording"] == "server requires unsupported ftn upload":
+                            await bot.send(event=event,message=Message(MessageSegment.text("[ERROR]  文件上传失败\r\n\r\n[原因]  机器人缺少上传文件的权限\r\n\r\n[解决办法]  请将机器人设置为管理员或者允许群员上传文件")))
                 else:
                     logger.error("数据库中未有该音乐地址数据")
             else:
@@ -98,7 +100,8 @@ async def set_receive(bot: Bot, event: Event, state: dict):  # 功能设置接�
     # logger.info(bot.__dict__)
     # logger.info(event.dict())
     #  logger.info(state)
-    if event.dict()['sender']['role'] in ncm_config.ncm_admin or str(event.dict()['sender']['user_id']) in ncm_config.superusers:
+    if event.dict()['sender']['role'] in ncm_config.ncm_admin or str(
+            event.dict()['sender']['user_id']) in ncm_config.superusers:
         if state["key"]:
             mold = state["key"][0]
         else:
