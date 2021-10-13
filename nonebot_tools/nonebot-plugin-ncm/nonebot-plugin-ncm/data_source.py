@@ -52,6 +52,26 @@ class Ncm:
         detail = [(data["name"] + "-" + ",".join([names["name"] for names in data["ar"]])) for data in songs]
         return detail
 
+    @staticmethod
+    def build_song(data):
+        resp = {"msg": "", "ids": []}
+        num = 1
+        for i in data:
+            resp["msg"] += f"{num}.[歌曲:{i['name']}](id:{i['id']})  作者:{i['ar']['name']}(id:){i['ar']['id']}\r\n"
+            resp["ids"].append(i['id'])
+            num += 1
+        return resp
+
+    async def search_song(self, keyword, limit=5):  # 搜索歌曲
+        res = self.api.cloudsearch.GetSearchResult(keyword=keyword, type=pyncm.cloudsearch.TYPE_SONG, limit=limit)
+        return self.build_song(res["result"]["songs"])
+
+    async def search_user(self, keyword, limit=5):  # 搜索用户
+        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=pyncm.cloudsearch.TYPE_USER, limit=limit)
+
+    async def search_playlist(self, keyword, limit=5):  # 搜索歌单
+        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=pyncm.cloudsearch.TYPE_PLAYLIST, limit=limit)
+
     async def playlist(self, lid):  # 下载歌单
         data = self.api.playlist.GetPlaylistInfo(lid)
         # logger.info(data)
@@ -109,5 +129,6 @@ class Ncm:
                         async for chunk in r.aiter_bytes():
                             await out_file.write(chunk)
             if len(ids) > 1:
-                await self.bot.send(event=self.event, message=Message(MessageSegment.text(f"下载进度:{num}/{len(ids)}")))
+                if num//10 == 0 or num==len(ids):
+                    await self.bot.send(event=self.event, message=Message(MessageSegment.text(f"下载进度:{num}/{len(ids)}")))
                 num += 1

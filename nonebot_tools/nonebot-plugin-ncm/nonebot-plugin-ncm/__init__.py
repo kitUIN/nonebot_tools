@@ -4,15 +4,15 @@
 import nonebot
 from loguru import logger
 from nonebot import on_regex, on_command, on_message
-from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, Message, ActionFailed
+from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, Message, ActionFailed, GroupMessageEvent
 import re
 from .data_source import Ncm, music, ncm_config, playlist, setting, Q
 
 set = on_command("ncm", priority=1)  # 功能设置
-music_regex = on_regex("song\?id=([0-9]+)&", priority=ncm_config.ncm_priority)  # 歌曲id识别 (新增json识别)
+music_regex = on_regex("(song|url)\?id=([0-9]+)(|&)", priority=ncm_config.ncm_priority)  # 歌曲id识别 (新增json识别)
 playlist_regex = on_regex("playlist\?id=([0-9]+)&", priority=ncm_config.ncm_priority)  # 歌单识别
 music_reply = on_message(priority=ncm_config.ncm_priority)  # 回复下载
-
+search = on_regex("搜(歌|歌单|用户)", priority=ncm_config.ncm_priority)  # 搜东西
 
 @music_regex.receive()
 async def music_receive(bot: Bot, event: Event, state: dict):
@@ -25,7 +25,7 @@ async def music_receive(bot: Bot, event: Event, state: dict):
     nid = list(filter(None, state["_matched_groups"]))  # 去除None
     if info:
         if info[0]["song"]:
-            msg = f"歌曲ID:{nid[0]}\r\n如需下载请回复该条消息\r\n关闭解析请使用指令\r\n#ncm f"
+            msg = f"歌曲ID:{nid[1]}\r\n如需下载请回复该条消息\r\n关闭解析请使用指令\r\n#ncm f"
             await bot.send(event=event, message=Message(MessageSegment.text(msg)))
 
     else:
@@ -106,7 +106,7 @@ async def set_receive(bot: Bot, event: Event, state: dict):  # 功能设置接�
             mold = state["key"][0]
         else:
             cmd = list(nonebot.get_driver().config.command_start)[0]
-            msg = f"{cmd}ncm:获取命令菜单\r\n{cmd}ncm t:开启解析\r\n{cmd}ncm f:关闭解析"
+            msg = f"{cmd}ncm:获取命令菜单\r\n说明:网易云歌曲分享到群内后回复机器人即可下载\r\n{cmd}ncm t:开启解析\r\n{cmd}ncm f:关闭解析"
             return await bot.send(event=event, message=Message(MessageSegment.text(msg)))
         info = setting.search(Q["group_id"] == event.dict()["group_id"])
         if info:
@@ -130,3 +130,21 @@ async def set_receive(bot: Bot, event: Event, state: dict):  # 功能设置接�
                 setting.insert({"group_id": event.dict()["group_id"], "song": False, "list": False})
     else:
         await bot.send(event=event, message=Message(MessageSegment.text("你咩有权限哦~")))
+"""
+
+@search.handle()
+async def search_receive(bot: Bot, event: Event, state: dict):
+    args = str(event.get_message()).strip()
+    if args:
+        state["id"] = args
+
+
+@search.got("id", prompt="请发出想要搜索的图片")
+async def handle_music(bot: Bot, event: GroupMessageEvent, state: T_State):
+    # logger.info(Message(state["pic"])[0].data["url"])  # 图片地址
+    try:
+        pic = await get_pic_info(Message(state["pic"])[0].data["url"])
+        await search.finish(Message([MessageSegment.text(pic), MessageSegment.at(event.get_user_id())]))
+    except KeyError:
+        await bot.send(event=event, message="不会吧不会吧，不会有人连图片都不会发吧！")
+"""
