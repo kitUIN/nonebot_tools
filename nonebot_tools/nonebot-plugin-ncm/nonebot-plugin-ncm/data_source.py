@@ -6,7 +6,7 @@ from datetime import datetime
 
 import aiofiles
 import httpx
-import pyncm
+from pyncm import apis
 from loguru import logger
 from nonebot.adapters.cqhttp import MessageSegment, Message
 
@@ -42,7 +42,7 @@ for ids in ncm_config.whitelist:
 
 class Ncm:
     def __init__(self, bot, event):
-        self.api = pyncm.apis
+        self.api = apis
         self.api.login.LoginViaCellphone(phone=ncm_config.ncm_phone, password=ncm_config.ncm_password)
         self.bot = bot
         self.event = event

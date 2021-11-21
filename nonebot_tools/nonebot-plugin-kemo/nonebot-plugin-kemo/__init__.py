@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
+from asyncio import new_event_loop
 from random import randint
 import aiofiles
 from loguru import logger
 from nonebot import on_command, on_startswith
-from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, Message, MessageEvent
+from nonebot.adapters.cqhttp import Bot, Event, MessageSegment, Message, MessageEvent, GroupMessageEvent
 from nonebot.plugin import on_message
 from nonebot.typing import T_State
 
@@ -13,20 +14,41 @@ from .data_source import KEMO, kemodata, Q
 
 kemo = on_command('kemo', priority=2, aliases={'k', 'ke', 'K', 'KEMO', 'KE', 'kemomimi', 'KEMOMIMI'})
 ke_reply = on_message(priority=2)
-upload = on_command('kemoupload', priority=2)
 
 
 @kemo.handle()
-async def kemo(bot: Bot, event: Event, state: dict):
+async def kemomm(bot: Bot, event: Event, state: T_State):
     api = KEMO()
     ids = randint(1, api.counts)
     resp = api.get_k_path(_id=ids)
-    if resp[0]:
+    key = str(event.get_message()).strip()
+    if key in ["上传", "upload"]:
+
+        state["kemo"] = key
+    elif not resp[0]:
+        state["kemoo"] = True
+        return await bot.send(event=event, message="数据库内找不到图片了呢~")
+    else:
+        state["kemoo"] = True
         mid = await bot.send(event=event, message=Message(
             MessageSegment.image(f"file:///{resp[1]}") + MessageSegment.text("kemomimi酱来了!")))
-        kemodata.insert({"mid": mid["message_id"], "id": ids})
-    else:
-        await bot.send(event=event, message="数据库内找不到图片了呢~")
+        return kemodata.insert({"mid": mid["message_id"], "id": ids})
+
+
+@kemo.got("kemoo", prompt="请发出想要上传到kemo库的图片捏\n不要上传跟kemomimi酱无关的图片!!!!!")
+async def kemooooooo(bot: Bot, event: GroupMessageEvent, state: T_State):
+    if type(state["kemoo"]) == bool:
+        return
+    # logger.info(Message(state["pic"])[0].data["url"])  # 图片地址
+    try:
+        api = KEMO()
+        imgs = [seg.data['url'] for seg in event.message if seg.type == 'image']
+        await bot.send(event=event, message="您的图片已加入队列，请等待查重结果(预计3分钟)")
+        loop = new_event_loop()
+        for i in imgs:
+            loop.run_until_complete(await api.upload(url=i, user=event.get_user_id(), tags=[], group_id=event.group_id))
+    except KeyError:
+        return await bot.send(event=event, message="不会吧不会吧，不会有人连图片都不会发吧！")
 
 
 @ke_reply.receive()
@@ -45,24 +67,3 @@ async def kemo_reply(bot: Bot, event: Event, state: dict):
 
         except KeyError:
             return
-
-
-@upload.handle()
-async def search_receive(bot: Bot, event: Event, state: dict):
-    args = str(event.get_message()).strip()
-    if args:
-        state["kem"] = args
-
-
-@upload.got("kem", prompt="请发出想要上传到kemo库的图片捏")
-async def handle_city(bot: Bot, event: MessageEvent, state: T_State):
-    # logger.info(Message(state["pic"])[0].data["url"])  # 图片地址
-    try:
-        api = KEMO()
-        msg = await api.upload(url=Message(state["pic"])[0].data["url"], user=event.get_user_id(), tags=[])
-        if msg[0]:
-            await bot.send(event=event, message=MessageSegment.image(f"file:///{msg[0]}"))
-        else:
-            await bot.send(event=event, message=msg)
-    except KeyError:
-        await bot.send(event=event, message="不会吧不会吧，不会有人连图片都不会发吧！")

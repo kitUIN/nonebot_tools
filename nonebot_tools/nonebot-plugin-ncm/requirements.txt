@@ -3,4 +3,4 @@ nonebot2
 httpx
 tinydb
 pydantic
-pyncm
+pyncm==1.6.4.0
