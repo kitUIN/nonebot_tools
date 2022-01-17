@@ -1,5 +1,5 @@
 aiofiles
-nonebot2
+nonebot2>=2.0.0b1
 httpx
 tinydb
 pydantic

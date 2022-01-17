@@ -6,9 +6,12 @@ from datetime import datetime
 
 import aiofiles
 import httpx
+import nonebot
+
 from pyncm import apis
+from pyncm.apis.cloudsearch import CloudSearchType
 from loguru import logger
-from nonebot.adapters.cqhttp import MessageSegment, Message
+from nonebot.adapters.onebot.v11 import MessageSegment, Message
 
 from .config import ncm_config
 from tinydb import TinyDB, Query
@@ -28,7 +31,7 @@ music = TinyDB("./db/music.json")
 playlist = TinyDB("./db/playlist.json")
 setting = TinyDB("./db/setting.json")
 Q = Query()
-
+cmd = list(nonebot.get_driver().config.command_start)[0]
 #  白名单导入
 for ids in ncm_config.whitelist:
     info = setting.search(Q["group_id"] == ids)
@@ -63,14 +66,14 @@ class Ncm:
         return resp
 
     async def search_song(self, keyword, limit=5):  # 搜索歌曲
-        res = self.api.cloudsearch.GetSearchResult(keyword=keyword, type=pyncm.cloudsearch.TYPE_SONG, limit=limit)
+        res = self.api.cloudsearch.GetSearchResult(keyword=keyword, type=CloudSearchType.SONG, limit=limit)
         return self.build_song(res["result"]["songs"])
 
     async def search_user(self, keyword, limit=5):  # 搜索用户
-        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=pyncm.cloudsearch.TYPE_USER, limit=limit)
+        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=CloudSearchType.USER, limit=limit)
 
     async def search_playlist(self, keyword, limit=5):  # 搜索歌单
-        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=pyncm.cloudsearch.TYPE_PLAYLIST, limit=limit)
+        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=CloudSearchType.PLAYLIST, limit=limit)
 
     async def playlist(self, lid):  # 下载歌单
         data = self.api.playlist.GetPlaylistInfo(lid)
@@ -81,7 +84,7 @@ class Ncm:
             msg = f"歌单:{raw['name']}\r\n创建者:{raw['creator']['nickname']}\r\n歌曲总数:{raw['trackCount']}\r\n" \
                   f"标签:{tags}\r\n播放次数:{raw['playCount']}\r\n收藏:{raw['subscribedCount']}\r\n" \
                   f"评论:{raw['commentCount']}\r\n分享:{raw['shareCount']}\r\nLIST:{lid}" \
-                  f"\r\n如需下载请回复该条消息\r\n关闭解析请使用指令\r\n#ncm f"
+                  f"\r\n如需下载请回复该条消息\r\n关闭解析请使用指令\r\n{cmd}ncm f"
             songs = [i['id'] for i in raw['trackIds']]
             info = playlist.search(Q["playlist_id"] == lid)
             if info:

@@ -1,8 +1,34 @@
+
+
+<p align="center">
+  <img src="https://i.niupic.com/images/2022/01/17/9TxD.png" width="200" height="200" alt="nonebot"></a>
+</p>
+
+<div align="center">
+
 # nonebot-plugin-ncm
-基于[go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 与[nonebot2](https://github.com/nonebot/nonebot2) 的网易无损音乐下载
+
+✨ 基于go-cqhttp与nonebot2的 网易云 无损音乐下载 ✨
+</div>
+
+<p align="center">
+  <a href="https://github.com/kitUIN/nonebot_tools/blob/master/nonebot-plugin-ncm/nonebot-plugin-ncm/LICENSE">
+    <img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="license">
+  </a>
+  <a>
+    <img src="https://img.shields.io/static/v1?label=nonebot2&message=2.0.1b&color=brightgreen" alt="nonebot">
+  </a>
+  <a href="https://pypi.python.org/pypi/nonebot-plugin-ncm">
+    <img src="https://img.shields.io/badge/python-3.7+-blue.svg" alt="python">
+  </a>
+</p>
+
+
 ## 开始
 `pip install nonebot-plugin-ncm`
 进行安装  
+如果希望使用nonebot2 a16及以下版本  
+请使用`pip install nonebot-plugin-ncm==1.1.0`进行安装  
 在`bot.py`添加`nonebot.load_plugin('nonebot-plugin-ncm')`
 ## 使用说明
 `.env`配置文件中需要添加拥有**VIP的网易云账号**  
