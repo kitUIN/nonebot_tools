@@ -24,12 +24,13 @@ search = on_regex("搜(歌|歌单|用户)", priority=ncm_config.ncm_priority)  #
 
 @music_regex.handle()
 async def music_receive(bot: Bot, event: Event, regroup: Tuple[Any, ...] = RegexGroup()):
-    logger.info(regroup[1])
+
     if event.dict()["message_type"] == "private":
         return await bot.send(event=event, message=Message(MessageSegment.text("私聊无法启用解析功能")))
     info = setting.search(Q["group_id"] == event.dict()["group_id"])
-    logger.info(info)
+    # logger.info(info)
     nid = regroup[1]
+    logger.debug(f"已识别NID:{nid}的歌曲")
     if info:
         if info[0]["song"]:
 
@@ -46,7 +47,7 @@ async def music_receive(bot: Bot, event: Event, regroup: Tuple[Any, ...] = Regex
         return await bot.send(event=event, message=Message(MessageSegment.text("私聊无法启用解析功能")))
     info = setting.search(Q["group_id"] == event.dict()["group_id"])
     lid = regroup[0]
-    logger.info(lid)
+    logger.debug(f"已识别LID:{lid}的歌单")
     if info:
         if info[0]["list"]:
             msg = await Ncm(bot, event).playlist(lid=lid)
@@ -56,8 +57,8 @@ async def music_receive(bot: Bot, event: Event, regroup: Tuple[Any, ...] = Regex
 
 
 @music_reply.handle()
-async def music_reply_receive(bot: Bot, event: Event):
-    if event.dict()["reply"] and event.dict()["reply"]["sender"]["user_id"] == event.self_id:
+async def music_reply_receive(bot: Bot, event: GroupMessageEvent):
+    if event.reply and event.reply.sender.user_id == event.self_id:
         try:  # 防止其他回复状况报错
             message: str = event.dict()["reply"]["message"][0].data["text"]
         except KeyError:
@@ -86,7 +87,6 @@ async def music_reply_receive(bot: Bot, event: Event):
             lid = re.search("LIST:([0-9]*)", message)
             info = playlist.search(Q["playlist_id"] == lid[1])
             if info:
-
                 await Ncm(bot, event).download(ids=info[0]["ids"])
                 for i in info[0]["ids"]:
                     data = music.search(Q["id"] == i)
@@ -100,13 +100,17 @@ async def music_reply_receive(bot: Bot, event: Event):
 
 
 @set.handle()
-async def set_receive(bot: Bot, event: Event, args: Message = CommandArg()):  # 功能设置接收
+async def set_receive(bot: Bot, event: GroupMessageEvent, args: Message = CommandArg()):  # 功能设置接收
     true = ["True", "T", "true", "t"]
     false = ["False", "F", "false", "f"]
     # logger.info(bot.__dict__)
     # logger.info(event.dict())
 
-    logger.success(event.dict()['sender']['role'])
+    logger.debug(f"权限为{event.sender.role}的用户<{event.sender.nickname}>尝试使用命令{cmd}ncm {args}")
+    if event.sender.role not in ncm_config.ncm_admin:
+        logger.debug(f"执行错误:用户<{event.sender.nickname}>权限{event.sender.role }不在{ncm_config.ncm_admin}中")
+    elif str(event.get_user_id()) in ncm_config.superusers:
+        logger.debug(f"执行错误:用户<{event.sender.nickname}>非超级管理员(SUPERUSERS)")
     if event.dict()['sender']['role'] in ncm_config.ncm_admin or str(event.get_user_id()) in ncm_config.superusers:
         if args:
             args = args.__str__().split()
@@ -118,7 +122,7 @@ async def set_receive(bot: Bot, event: Event, args: Message = CommandArg()):  # 
         #logger.info(info)
         if info:
             if mold in true:
-                logger.info(info)
+                # logger.info(info)
                 info[0]["song"] = True
                 info[0]["list"] = True
                 setting.update(info[0], Q["group_id"] == event.dict()["group_id"])
@@ -130,6 +134,7 @@ async def set_receive(bot: Bot, event: Event, args: Message = CommandArg()):  # 
                 setting.update(info[0], Q["group_id"] == event.dict()["group_id"])
                 msg = "已关闭自动下载功能"
                 await bot.send(event=event, message=Message(MessageSegment.text(msg)))
+            logger.debug(f"用户<{event.sender.nickname}>执行操作成功")
         else:
             if mold in true:
                 setting.insert({"group_id": event.dict()["group_id"], "song": True, "list": True})

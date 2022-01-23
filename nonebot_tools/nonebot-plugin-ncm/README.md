@@ -19,7 +19,7 @@
     <img src="https://img.shields.io/static/v1?label=nonebot2&message=v2.0.0-beta.1&color=brightgreen" alt="nonebot">
   </a>
   <a href="https://pypi.python.org/pypi/nonebot-plugin-ncm">
-    <img src="https://img.shields.io/badge/release-v1.2.0-blue" alt="pypi">
+    <img src="https://img.shields.io/badge/release-v1.2.1-blue" alt="pypi">
   </a>
 </p>
 
