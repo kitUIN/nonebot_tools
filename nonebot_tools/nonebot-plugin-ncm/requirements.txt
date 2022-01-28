@@ -3,5 +3,5 @@ httpx
 tinydb
 pydantic
 nonebot2>=2.0.0b1
-pyncm>=1.6.4.0
+pyncm>=1.6.5.0
 nonebot-adapter-onebot>=2.0.0b1

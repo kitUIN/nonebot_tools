@@ -9,7 +9,7 @@ import httpx
 import nonebot
 
 from pyncm import apis
-from pyncm.apis.cloudsearch import CloudSearchType
+from pyncm.apis.cloudsearch import SONG,USER,PLAYLIST
 from loguru import logger
 from nonebot.adapters.onebot.v11 import MessageSegment, Message
 
@@ -66,14 +66,14 @@ class Ncm:
         return resp
 
     async def search_song(self, keyword, limit=5):  # 搜索歌曲
-        res = self.api.cloudsearch.GetSearchResult(keyword=keyword, type=CloudSearchType.SONG, limit=limit)
+        res = self.api.cloudsearch.GetSearchResult(keyword=keyword, type=SONG, limit=limit)
         return self.build_song(res["result"]["songs"])
 
     async def search_user(self, keyword, limit=5):  # 搜索用户
-        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=CloudSearchType.USER, limit=limit)
+        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=USER, limit=limit)
 
     async def search_playlist(self, keyword, limit=5):  # 搜索歌单
-        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=CloudSearchType.PLAYLIST, limit=limit)
+        self.api.cloudsearch.GetSearchResult(keyword=keyword, type=PLAYLIST, limit=limit)
 
     async def playlist(self, lid):  # 下载歌单
         data = self.api.playlist.GetPlaylistInfo(lid)

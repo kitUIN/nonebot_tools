@@ -8,7 +8,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="nonebot-plugin-ncm",
-    version="1.2.1",
+    version="1.2.2",
     author="kitUIN",
     author_email="kulujun@gmail.com",
     description="An ncm music downloader plugin for nonebot2",

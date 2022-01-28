@@ -19,17 +19,17 @@
     <img src="https://img.shields.io/static/v1?label=nonebot2&message=v2.0.0-beta.1&color=brightgreen" alt="nonebot">
   </a>
   <a href="https://pypi.python.org/pypi/nonebot-plugin-ncm">
-    <img src="https://img.shields.io/badge/release-v1.2.1-blue" alt="pypi">
+    <img src="https://img.shields.io/badge/release-v1.2.2-blue" alt="pypi">
   </a>
 </p>
 
 
 ## 开始
-`pip install nonebot-plugin-ncm`
-进行安装  
+1.`pip install nonebot-plugin-ncm` 进行安装(v1.2.2)  
+2.并在`bot.py`添加`nonebot.load_plugin('nonebot-plugin-ncm')`(如果是通过`nb-cli`安装可以跳过这步(beta1以上版本))  
 如果希望使用nonebot2 a16及以下版本  
 请使用`pip install nonebot-plugin-ncm==1.1.0`进行安装  
-在`bot.py`添加`nonebot.load_plugin('nonebot-plugin-ncm')`
+
 ## 使用说明
 `.env`配置文件中需要添加拥有**VIP的网易云账号**  
 本程序实质为调用web接口下载音乐上传  
