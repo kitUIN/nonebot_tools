@@ -25,7 +25,7 @@
 
 
 ## 开始
-1.`pip install nonebot-plugin-ncm` 进行安装(v1.2.2)  
+1.`pip install nonebot-plugin-ncm` 进行安装(v1.2.3)  
 2.并在`bot.py`添加`nonebot.load_plugin('nonebot-plugin-ncm')`(如果是通过`nb-cli`安装可以跳过这步(beta1以上版本))  
 如果希望使用nonebot2 a16及以下版本  
 请使用`pip install nonebot-plugin-ncm==1.1.0`进行安装  

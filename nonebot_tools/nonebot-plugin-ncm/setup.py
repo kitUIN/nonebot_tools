@@ -8,7 +8,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="nonebot-plugin-ncm",
-    version="1.2.2",
+    version="1.2.3",
     author="kitUIN",
     author_email="kulujun@gmail.com",
     description="An ncm music downloader plugin for nonebot2",
@@ -19,7 +19,7 @@ setuptools.setup(
     license="MIT License",
     classifiers=[
         "Programming Language :: Python :: 3.7",
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Apache Software License',
         "Operating System :: OS Independent",
     ], install_requires=requirements,
     python_requires='>=3.7',

@@ -18,16 +18,13 @@ from tinydb import TinyDB, Query
 
 dbPath = Path("db")
 musicPath = Path("music")
-if not dbPath.is_dir() or not musicPath.is_dir():
-    if not musicPath.is_dir():
-        Path("music").mkdir()
-        logger.success("音乐库创建成功")
-    elif not dbPath.is_dir():
-        Path("db").mkdir()
-        logger.success("数据库目录创建成功")
-else:
-    logger.info("数据库与音乐库目录已存在")
-music = TinyDB("./db/music.json")
+if not musicPath.is_dir():
+    Path("music").mkdir()
+    logger.success("音乐库创建成功")
+if not dbPath.is_dir():
+    Path("db").mkdir()
+    logger.success("数据库目录创建成功")
+music = TinyDB("./db/musics.json")
 playlist = TinyDB("./db/playlist.json")
 setting = TinyDB("./db/setting.json")
 Q = Query()
