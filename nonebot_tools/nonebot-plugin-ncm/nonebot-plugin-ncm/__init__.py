@@ -6,7 +6,7 @@ import nonebot
 from loguru import logger
 from nonebot import on_regex, on_command, on_message
 from nonebot.adapters import Message, Event
-from nonebot.adapters.onebot.v11 import Bot, MessageSegment, ActionFailed, GroupMessageEvent, PrivateMessageEvent
+from nonebot.adapters.onebot.v11 import Event, Bot, MessageSegment, ActionFailed, GroupMessageEvent, PrivateMessageEvent
 import re
 
 from nonebot.matcher import Matcher
@@ -15,11 +15,11 @@ from nonebot.typing import T_State
 
 from .data_source import Ncm, music, ncm_config, playlist, setting, Q,cmd
 
-set = on_command("ncm", priority=1)  # 功能设置
-music_regex = on_regex("(song|url)\?id=([0-9]+)(|&)", priority=ncm_config.ncm_priority)  # 歌曲id识别 (新增json识别)
-playlist_regex = on_regex("playlist\?id=([0-9]+)&", priority=ncm_config.ncm_priority)  # 歌单识别
-music_reply = on_message(priority=ncm_config.ncm_priority)  # 回复下载
-search = on_regex("搜(歌|歌单|用户)", priority=ncm_config.ncm_priority)  # 搜东西
+set = on_command("ncm", priority=1,block=False)  # 功能设置
+music_regex = on_regex("(song|url)\?id=([0-9]+)(|&)", priority=2,block=False)  # 歌曲id识别 (新增json识别)
+playlist_regex = on_regex("playlist\?id=([0-9]+)&", priority=2,block=False)  # 歌单识别
+music_reply = on_message(priority=2,block=False)  # 回复下载
+search = on_regex("搜(歌|歌单|用户)", priority=2,block=False)  # 搜东西
 
 
 @music_regex.handle()

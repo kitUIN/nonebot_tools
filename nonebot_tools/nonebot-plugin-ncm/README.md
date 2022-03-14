@@ -25,7 +25,7 @@
 
 
 ## 开始
-1.`pip install nonebot-plugin-ncm` 进行安装(v1.2.3)  
+1.`pip install nonebot-plugin-ncm` 进行安装(v1.2.4)  
 2.并在`bot.py`添加`nonebot.load_plugin('nonebot-plugin-ncm')`(如果是通过`nb-cli`安装可以跳过这步(beta1以上版本))  
 如果希望使用nonebot2 a16及以下版本  
 请使用`pip install nonebot-plugin-ncm==1.1.0`进行安装  
@@ -33,14 +33,14 @@
 ## 使用说明
 `.env`配置文件中需要添加拥有**VIP的网易云账号**  
 本程序实质为调用web接口下载音乐上传  
-默认下载最高音质的音乐  
+默认下载最高音质的音乐 
+**默认解析状态为关闭，请`#ncm t`开启**
 ```
 ncm_admin=["owner", "admin"] # 设置命令权限（非解析下载，仅解析功能开关设置）
 ncm_phone= #手机登录
 ncm_password= #密码
 ncm_song=True  # 单曲解析开关
 ncm_list=True  # 歌单解析开关
-ncm_priority=2  # 解析优先级(ncm插件解析的优先级,1最高)
 white_list=[]  # 白名单一键导入
 ```
 网易云单曲分享到群内会自动解析下载  

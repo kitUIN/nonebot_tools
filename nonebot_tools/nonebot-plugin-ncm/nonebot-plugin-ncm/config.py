@@ -12,7 +12,6 @@ class Config(BaseSettings):
     ncm_password: str = ""  # 密码
     ncm_song: bool = True  # 单曲解析开关
     ncm_list: bool = True  # 歌单解析开关
-    ncm_priority: int = 2  # 解析优先级
     whitelist: list = []  # 白名单(一键导入)
     class Config:
         extra = "ignore"
